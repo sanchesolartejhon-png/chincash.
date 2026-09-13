@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>CHINCASH - Préstamos entre los nuestros</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --primary: #00C853;
+    --primary-dark: #009624;
+    --primary-light: #69F0AE;
+    --accent: #FFD600;
+    --accent-dark: #C7A500;
+    --bg-dark: #0d1117;
+    --bg-card: #161b22;
+    --bg-card2: #1c2333;
+    --text: #f0f0f0;
+    --text-muted: #8b949e;
+    --gradient1: linear-gradient(135deg, #00C853 0%, #1B5E20 100%);
+    --gradient2: linear-gradient(135deg, #FFD600 0%, #C7A500 100%);
+    --radius: 16px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .bg-anim { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+  .bg-anim .blob {
+    position:absolute; border-radius:50%; filter:blur(80px); opacity:0.07;
+    animation: drift 25s infinite ease-in-out;
+  }
+  .blob:nth-child(1) { width:500px; height:500px; background:var(--primary); top:-10%; left:-10%; }
+  .blob:nth-child(2) { width:350px; height:350px; background:var(--accent); bottom:-5%; right:-5%; animation-delay:8s; }
+  .blob:nth-child(3) { width:250px; height:250px; background:var(--primary-light); top:40%; left:60%; animation-delay:15s; }
+  @keyframes drift {
+    0%,100%{transform:translate(0,0) scale(1)}
+    33%{transform:translate(40px,-30px) scale(1.1)}
+    66%{transform:translate(-30px,25px) scale(0.9)}
+  }
+
+  .navbar {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:rgba(13,17,23,0.88); backdrop-filter:blur(20px);
+    border-bottom:1px solid rgba(255,255,255,0.04);
+    height:64px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 1.5rem; transition:0.3s;
+  }
+  .navbar.scrolled { box-shadow:0 4px 30px rgba(0,0,0,0.5); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo-icon {
+    width:38px; height:38px; background:var(--gradient1); border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem; font-weight:900; color:#fff;
+    box-shadow:0 3px 12px rgba(0,200,83,0.3);
+  }
+  .logo-text { font-size:1.4rem; font-weight:900; letter-spacing:-0.5px; }
+  .logo-text .chin { color:var(--text); }
+  .logo-text .cash { color:var(--accent); }
+  .nav-links { display:flex; gap:1.5rem; list-style:none; }
+  .nav-links a {
+    color:var(--text-muted); text-decoration:none; font-weight:500;
+    font-size:0.85rem; transition:0.3s;
+  }
+  .nav-links a:hover { color:var(--primary-light); }
+  .btn-nav {
+    background:var(--gradient1); color:#fff; border:none;
+    padding:9px 22px; border-radius:50px; font-weight:600;
+    cursor:pointer; font-size:0.82rem; transition:0.3s;
+    box-shadow:0 3px 12px rgba(0,200,83,0.25);
+  }
+  .btn-nav:hover { transform:translateY(-2px); box-shadow:0 5px 20px rgba(0,200,83,0.4); }
+  .hamburger { display:none; cursor:pointer; flex-direction:column; gap:4px; }
+  .hamburger span { width:22px; height:2px; background:var(--text); transition:0.3s; border-radius:2px; }
+
+  .hero {
+    position:relative; z-index:1;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:90px 1.5rem 50px;
+  }
+  .hero-content { max-width:700px; }
+  .hero-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(0,200,83,0.08); border:1px solid rgba(0,200,83,0.25);
+    padding:7px 18px; border-radius:50px; font-size:0.78rem;
+    color:var(--primary-light); margin-bottom:1.5rem;
+    animation: fadeUp 0.7s ease;
+  }
+  .hero-badge .dot { width:7px; height:7px; background:var(--primary); border-radius:50%; animation:pulse 2s infinite; }
+  .hero h1 {
+    font-size:clamp(2rem,5.5vw,3.8rem); font-weight:900;
+    line-height:1.08; margin-bottom:1.2rem; animation:fadeUp 0.7s ease 0.15s both;
+  }
+  .hero h1 .green { color:var(--primary); }
+  .hero h1 .gold { color:var(--accent); }
+  .hero p {
+    font-size:1.05rem; color:var(--text-muted); line-height:1.7;
+    max-width:480px; margin:0 auto 2rem; animation:fadeUp 0.7s ease 0.3s both;
+  }
+  .hero-btns {
+    display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;
+    animation:fadeUp 0.7s ease 0.45s both;
+  }
+  .btn-primary {
+    background:var(--gradient1); color:#fff; border:none;
+    padding:14px 36px; border-radius:50px; font-weight:700;
+    font-size:0.95rem; cursor:pointer; transition:0.3s;
+    box-shadow:0 5px 20px rgba(0,200,83,0.3);
+  }
+  .btn-primary:hover { transform:translateY(-3px); box-shadow:0 8px 30px rgba(0,200,83,0.45); }
+  .btn-secondary {
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);
+    color:var(--text); padding:14px 36px; border-radius:50px; font-weight:600;
+    font-size:0.95rem; cursor:pointer; transition:0.3s;
+  }
+  .btn-secondary:hover { border-color:var(--primary); background:rgba(0,200,83,0.06); }
+
+  .hero-stats {
+    display:flex; gap:2.5rem; justify-content:center; margin-top:3rem;
+    animation:fadeUp 0.7s ease 0.6s both;
+  }
+  .stat { text-align:center; }
+  .stat-number { font-size:1.6rem; font-weight:800; color:var(--primary); }
+  .stat-label { font-size:0.72rem; color:var(--text-muted); margin-top:3px; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(25px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  .section { position:relative; z-index:1; padding:80px 1.5rem; }
+  .section-title { text-align:center; font-size:2.2rem; font-weight:800; margin-bottom:0.8rem; }
+  .section-title .green { color:var(--primary); }
+  .section-sub { text-align:center; color:var(--text-muted); max-width:450px; margin:0 auto 2.5rem; font-size:0.95rem; line-height:1.6; }
+  .container { max-width:900px; margin:0 auto; }
+
+  .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.5rem; }
+  .step {
+    text-align:center; padding:1.8rem 1.2rem;
+    background:var(--bg-card); border:1px solid rgba(255,255,255,0.05);
+    border-radius:var(--radius); transition:0.4s;
+  }
+  .step:hover { transform:translateY(-5px); border-color:rgba(0,200,83,0.2); }
+  .step-num {
+    width:44px; height:44px; border-radius:50%; background:var(--gradient1);
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:1.1rem; font-weight:800; color:#fff; margin-bottom:0.8rem;
+    box-shadow:0 3px 12px rgba(0,200,83,0.3);
+  }
+  .step h4 { font-size:0.95rem; font-weight:700; margin-bottom:0.4rem; }
+  .step p { font-size:0.78rem; color:var(--text-muted); line-height:1.5; }
+
+  .calc-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; align-items:start; }
+  @media(max-width:700px) { .calc-grid { grid-template-columns:1fr; } }
+
+  .calc-card {
+    background:var(--bg-card); border:1px solid rgba(255,255,255,0.05);
+    border-radius:var(--radius); padding:2rem;
+  }
+  .calc-card h3 { font-size:1.15rem; font-weight:700; margin-bottom:1.2rem; }
+
+  .form-group { margin-bottom:1.2rem; }
+  .form-group label {
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:0.8rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;
+  }
+  .form-group label .val { font-weight:700; color:var(--primary); font-size:0.85rem; }
+  .form-group input, .form-group select {
+    width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+    border-radius:10px; padding:11px 14px; color:var(--text); font-size:0.9rem;
+    font-family:'Inter'; transition:0.3s;
+  }
+  .form-group input:focus, .form-group select:focus {
+    outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(0,200,83,0.12);
+  }
+  .form-group select option { background:var(--bg-card); }
+
+  input[type=range] {
+    width:100%; -webkit-appearance:none; appearance:none;
+    height:5px; background:rgba(255,255,255,0.06); border-radius:3px;
+    outline:none; margin-top:6px;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:20px; height:20px;
+    background:var(--primary); border-radius:50%; cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,200,83,0.4);
+  }
+
+  .result-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:0.8rem 0; border-bottom:1px solid rgba(255,255,255,0.04);
+  }
+  .result-row:last-child { border-bottom:none; }
+  .result-label { font-size:0.82rem; color:var(--text-muted); }
+  .result-value { font-size:0.95rem; font-weight:700; }
+  .result-value.big { font-size:1.7rem; color:var(--primary); }
+  .result-value.gold { color:var(--accent); }
+  .result-row.highlight {
+    background:rgba(0,200,83,0.06); margin:0.8rem -2rem;
+    padding:1.2rem 2rem; border-radius:10px; border:none;
+  }
+
+  .chart-wrap { display:flex; justify-content:center; margin:1.5rem 0; }
+  .donut {
+    width:130px; height:130px; border-radius:50%; position:relative;
+  }
+  .donut-center {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:65px; height:65px; background:var(--bg-card); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+  }
+  .donut-center .amt { font-size:0.6rem; font-weight:700; color:var(--primary); }
+  .donut-center .lbl { font-size:0.5rem; color:var(--text-muted); }
+
+  .amort-wrap {
+    max-height:250px; overflow-y:auto; border-radius:10px;
+    border:1px solid rgba(255,255,255,0.04); margin-top:1rem;
+  }
+  .amort-wrap::-webkit-scrollbar { width:5px; }
+  .amort-wrap::-webkit-scrollbar-track { background:transparent; }
+  .amort-wrap::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:3px; }
+  .amort-table { width:100%; border-collapse:collapse; font-size:0.72rem; }
+  .amort-table th {
+    background:rgba(0,200,83,0.06); padding:8px 6px; text-align:right;
+    font-weight:600; color:var(--primary-light); position:sticky; top:0;
+  }
+  .amort-table th:first-child { text-align:center; }
+  .amort-table td { padding:6px; text-align:right; border-bottom:1px solid rgba(255,255,255,0.02); }
+  .amort-table td:first-child { text-align:center; color:var(--text-muted); }
+
+  .app-form {
+    background:var(--bg-card); border:1px solid rgba(255,255,255,0.05);
+    border-radius:var(--radius); padding:2.5rem; max-width:550px; margin:0 auto;
+  }
+  .app-form h3 { font-size:1.3rem; font-weight:800; margin-bottom:0.3rem; }
+  .app-form .sub { color:var(--text-muted); margin-bottom:1.5rem; font-size:0.88rem; }
+  .f-row { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
+  @media(max-width:550px) { .f-row { grid-template-columns:1fr; } }
+  .f-group { margin-bottom:1rem; }
+  .f-group label { display:block; font-size:0.76rem; font-weight:600; margin-bottom:5px; color:var(--text-muted); }
+  .f-group input, .f-group select {
+    width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+    border-radius:9px; padding:10px 12px; color:var(--text); font-size:0.88rem;
+    font-family:'Inter'; transition:0.3s;
+  }
+  .f-group input:focus, .f-group select:focus {
+    outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(0,200,83,0.12);
+  }
+  .f-group select option { background:var(--bg-card); }
+  .btn-submit {
+    background:var(--gradient1); color:#fff; border:none;
+    padding:13px 40px; border-radius:50px; font-weight:700;
+    font-size:0.92rem; cursor:pointer; transition:0.3s; width:100%;
+    box-shadow:0 5px 20px rgba(0,200,83,0.3); margin-top:0.5rem;
+  }
+  .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,200,83,0.45); }
+
+  .trust-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1.2rem; }
+  .trust-card {
+    background:var(--bg-card); border:1px solid rgba(255,255,255,0.05);
+    border-radius:var(--radius); padding:1.5rem; text-align:center; transition:0.3s;
+  }
+  .trust-card:hover { border-color:rgba(0,200,83,0.2); transform:translateY(-3px); }
+  .trust-card .icon { font-size:2rem; margin-bottom:0.8rem; }
+  .trust-card h4 { font-size:0.92rem; font-weight:700; margin-bottom:0.3rem; }
+  .trust-card p { font-size:0.75rem; color:var(--text-muted); line-height:1.5; }
+
+  .faq-list { max-width:600px; margin:0 auto; }
+  .faq-item {
+    background:var(--bg-card); border:1px solid rgba(255,255,255,0.05);
+    border-radius:10px; margin-bottom:0.6rem; overflow:hidden; cursor:pointer; transition:0.3s;
+  }
+  .faq-item:hover { border-color:rgba(0,200,83,0.2); }
+  .faq-q {
+    padding:1rem 1.2rem; display:flex; justify-content:space-between; align-items:center;
+    font-weight:600; font-size:0.85rem;
+  }
+  .faq-q .arr { transition:0.3s; color:var(--primary); font-size:0.7rem; }
+  .faq-item.active .arr { transform:rotate(180deg); }
+  .faq-a { max-height:0; overflow:hidden; transition:0.35s; }
+  .faq-item.active .faq-a { max-height:180px; }
+  .faq-a p { padding:0 1.2rem 1rem; font-size:0.82rem; color:var(--text-muted); line-height:1.6; }
+
+  .footer {
+    position:relative; z-index:1;
+    background:rgba(0,0,0,0.3); border-top:1px solid rgba(255,255,255,0.04);
+    padding:2.5rem 1.5rem 1.5rem; text-align:center;
+  }
+  .footer .logo { justify-content:center; margin-bottom:0.8rem; }
+  .footer p { color:var(--text-muted); font-size:0.78rem; line-height:1.6; max-width:400px; margin:0 auto 1rem; }
+  .footer-links { display:flex; gap:1.5rem; justify-content:center; margin-bottom:1.5rem; }
+  .footer-links a { color:var(--text-muted); text-decoration:none; font-size:0.78rem; transition:0.3s; }
+  .footer-links a:hover { color:var(--primary); }
+  .footer-copy { font-size:0.72rem; color:var(--text-muted); border-top:1px solid rgba(255,255,255,0.04); padding-top:1rem; }
+
+  .modal-bg {
+    position:fixed; top:0; left:0; right:0; bottom:0; z-index:200;
+    background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
+    display:none; align-items:center; justify-content:center; padding:1.5rem;
+  }
+  .modal-bg.active { display:flex; }
+  .modal-box {
+    background:var(--bg-card); border:1px solid rgba(0,200,83,0.2);
+    border-radius:18px; padding:2.5rem; text-align:center; max-width:400px; width:100%;
+    animation: popIn 0.4s ease;
+  }
+  @keyframes popIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+  .modal-box .check {
+    width:60px; height:60px; background:var(--gradient1); border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:1.6rem; margin-bottom:1.2rem;
+    box-shadow:0 5px 20px rgba(0,200,83,0.35);
+  }
+  .modal-box h3 { font-size:1.2rem; font-weight:800; margin-bottom:0.4rem; }
+  .modal-box p { color:var(--text-muted); font-size:0.88rem; margin-bottom:1.5rem; line-height:1.6; }
+  .modal-box .ref { font-size:0.72rem; color:var(--primary); font-weight:600; letter-spacing:1px; }
+  .btn-close {
+    background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+    color:var(--text); padding:10px 28px; border-radius:50px; font-weight:600;
+    cursor:pointer; font-size:0.85rem; transition:0.3s; margin-top:1.2rem;
+  }
+  .btn-close:hover { border-color:var(--primary); }
+
+  .reveal { opacity:0; transform:translateY(30px); transition:0.7s; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  @media(max-width:700px) {
+    .nav-links { display:none; }
+    .hamburger { display:flex; }
+    .hero h1 { font-size:1.9rem; }
+    .hero-stats { gap:1.2rem; flex-wrap:wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class='bg-anim'><div class='blob'></div><div class='blob'></div><div class='blob'></div></div>
+
+<nav class='navbar' id='navbar'>
+  <div class='logo'>
+    <div class='logo-icon'>C</div>
+    <div class='logo-text'><span class='chin'>CHIN</span><span class='cash'>CASH</span></div>
+  </div>
+  <ul class='nav-links'>
+    <li><a href='#como'>Cómo Funciona</a></li>
+    <li><a href='#calculadora'>Calculadora</a></li>
+    <li><a href='#solicitar'>Solicitar</a></li>
+    <li><a href='#faq'>FAQ</a></li>
+  </ul>
+  <button class='btn-nav' onclick="document.getElementById('solicitar').scrollIntoView({behavior:'smooth'})">Pedir Préstamo</button>
+  <div class='hamburger' onclick="var n=document.querySelector('.nav-links');n.style.display=n.style.display==='flex'?'none':'flex'">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<section class='hero'>
+  <div class='hero-content'>
+    <div class='hero-badge'><div class='dot'></div> Solo para los nuestros 🤝</div>
+    <h1>Préstamos entre<br><span class='green'>Amigos</span> y <span class='gold'>Familia</span></h1>
+    <p>CHINCASH es tu red de confianza. Préstamos rápidos de hasta S/ 600 soles, sin papeleos, sin complicaciones. Porque entre los nuestros, nos cuidamos.</p>
+    <div class='hero-btns'>
+      <button class='btn-primary' onclick="document.getElementById('calculadora').scrollIntoView({behavior:'smooth'})">Calcular Préstamo</button>
+      <button class='btn-secondary' onclick="document.getElementById('solicitar').scrollIntoView({behavior:'smooth'})">Solicitar Ahora</button>
+    </div>
+    <div class='hero-stats'>
+      <div class='stat'><div class='stat-number' data-count='85'>0</div><div class='stat-label'>Amigos Activos</div></div>
+      <div class='stat'><div class='stat-number' data-count='600'>0</div><div class='stat-label'>S/ Máximo</div></div>
+      <div class='stat'><div class='stat-number' data-count='5'>0</div><div class='stat-label'>Min. Aprobación</div></div>
+    </div>
+  </div>
+</section>
+
+<section class='section' id='como'>
+  <div class='container'>
+    <h2 class='section-title'>¿Cómo <span class='green'>Funciona</span>?</h2>
+    <p class='section-sub'>Tan fácil como pedirle un favor a un amigo — pero con todo claro y por escrito</p>
+    <div class='steps'>
+      <div class='step'><div class='step-num'>1</div><h4>Escríbeme</h4><p>Mándame un mensaje o llena el formulario</p></div>
+      <div class='step'><div class='step-num'>2</div><h4>Elige Monto</h4><p>Desde S/ 50 hasta S/ 600, tú decides</p></div>
+      <div class='step'><div class='step-num'>3</div><h4>Te Confirmo</h4><p>Te digo sí en minutos, sin vueltas</p></div>
+      <div class='step'><div class='step-num'>4</div><h4>Recibes tu Plata</h4><p>Yape, Plin o transferencia directo</p></div>
+    </div>
+  </div>
+</section>
+
+<section class='section'>
+  <div class='container'>
+    <h2 class='section-title'>¿Por qué <span class='green'>Confiar</span>?</h2>
+    <p class='section-sub'>No somos un banco, somos familia</p>
+    <div class='trust-grid'>
+      <div class='trust-card'>
+        <div class='icon'>🔒</div>
+        <h4>100% Privado</h4>
+        <p>Solo entre nosotros. Nadie de afuera se entera.</p>
+      </div>
+      <div class='trust-card'>
+        <div class='icon'>⚡</div>
+        <h4>Ultra Rápido</h4>
+        <p>Te confirmo en 5 minutos y te transfiero al toque.</p>
+      </div>
+      <div class='trust-card'>
+        <div class='icon'>🤲</div>
+        <h4>Sin Papeleos</h4>
+        <p>Nada de formularios del banco. Solo tu palabra.</p>
+      </div>
+      <div class='trust-card'>
+        <div class='icon'>💛</div>
+        <h4>Flexible</h4>
+        <p>Si te atrasas, lo hablamos. Entre amigos nos entendemos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class='section' id='calculadora'>
+  <div class='container'>
+    <h2 class='section-title'>Calcula tu <span class='green'>Préstamo</span></h2>
+    <p class='section-sub'>Simula cuánto vas a pagar — sin sorpresas</p>
+    <div class='calc-grid'>
+      <div class='calc-card'>
+        <h3>📝 Configura</h3>
+        <div class='form-group'>
+          <label>Monto <span class='val' id='amtDisp'>S/ 300</span></label>
+          <input type='range' id='loanAmt' min='50' max='600' step='25' value='300' oninput='updateCalc()'>
+        </div>
+        <div class='form-group'>
+          <label>Plazo <span class='val' id='termDisp'>15 días</span></label>
+          <input type='range' id='loanTerm' min='7' max='60' step='1' value='15' oninput='updateCalc()'>
+        </div>
+        <div class='form-group'>
+          <label>Modalidad</label>
+          <select id='loanMode' onchange='updateCalc()'>
+            <option value='daily'>Pago diario</option>
+            <option value='weekly' selected>Pago semanal</option>
+            <option value='biweekly'>Pago quincenal</option>
+            <option value='monthly'>Pago mensual</option>
+          </select>
+        </div>
+        <div class='form-group' style='background:rgba(255,214,0,0.06);padding:0.8rem;border-radius:10px;border:1px solid rgba(255,214,0,0.15)'>
+          <label style='color:var(--accent);margin-bottom:0'>💡 Tasa de interés: 5% por ciclo</label>
+        </div>
+      </div>
+      <div class='calc-card'>
+        <h3>📊 Resultado</h3>
+        <div class='chart-wrap'>
+          <div class='donut' id='donut' style='background:conic-gradient(var(--primary) 0% 80%, var(--accent) 80% 100%)'>
+            <div class='donut-center'>
+              <div class='amt' id='donutAmt'>S/ 300</div>
+              <div class='lbl'>Capital</div>
+            </div>
+          </div>
+        </div>
+        <div class='result-row'>
+          <span class='result-label'>Cuota por pago</span>
+          <span class='result-value big' id='cuota'>S/ 0</span>
+        </div>
+        <div class='result-row'>
+          <span class='result-label'>Capital</span>
+          <span class='result-value' id='cap'>S/ 0</span>
+        </div>
+        <div class='result-row'>
+          <span class='result-label'>Interés total</span>
+          <span class='result-value gold' id='intTotal'>S/ 0</span>
+        </div>
+        <div class='result-row highlight'>
+          <span class='result-label'>Total a pagar</span>
+          <span class='result-value big' id='totalPay'>S/ 0</span>
+        </div>
+        <div class='amort-wrap'>
+          <table class='amort-table'>
+            <thead><tr><th>#</th><th>Cuota</th><th>Interés</th><th>Capital</th><th>Saldo</th></tr></thead>
+            <tbody id='amortBody'></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class='section' id='solicitar'>
+  <div class='container'>
+    <h2 class='section-title'>Solicita tu <span class='green'>Préstamo</span></h2>
+    <p class='section-sub'>Llena esto y te escribo por WhatsApp al toque</p>
+    <div class='app-form'>
+      <h3>🚀 Pedir Préstamo</h3>
+      <p class='sub'>Solo para amigos y familia — tu info está segura conmigo</p>
+      <form id='appForm' onsubmit='submitApp(event)'>
+        <div class='f-row'>
+          <div class='f-group'>
+            <label>Nombre *</label>
+            <input type='text' id='fname' placeholder='Tu nombre' required>
+          </div>
+          <div class='f-group'>
+            <label>Teléfono / WhatsApp *</label>
+            <input type='tel' id='fphone' placeholder='+51 999 888 777' required>
+          </div>
+        </div>
+        <div class='f-row'>
+          <div class='f-group'>
+            <label>Monto que necesitas *</label>
+            <select id='famount' required>
+              <option value=''>Elige...</option>
+              <option value='50'>S/ 50</option>
+              <option value='100'>S/ 100</option>
+              <option value='150'>S/ 150</option>
+              <option value='200'>S/ 200</option>
+              <option value='250'>S/ 250</option>
+              <option value='300'>S/ 300</option>
+              <option value='350'>S/ 350</option>
+              <option value='400'>S/ 400</option>
+              <option value='450'>S/ 450</option>
+              <option value='500'>S/ 500</option>
+              <option value='550'>S/ 550</option>
+              <option value='600'>S/ 600</option>
+            </select>
+          </div>
+          <div class='f-group'>
+            <label>Cuándo puedes pagar *</label>
+            <select id='fterm' required>
+              <option value=''>Elige...</option>
+              <option value='7'>En 1 semana</option>
+              <option value='15'>En 15 días</option>
+              <option value='30'>En 1 mes</option>
+              <option value='45'>En 45 días</option>
+              <option value='60'>En 2 meses</option>
+            </select>
+          </div>
+        </div>
+        <div class='f-group'>
+          <label>¿Para qué lo necesitas?</label>
+          <input type='text' id='freason' placeholder='Ej: mercado, pasaje, emergencia...'>
+        </div>
+        <div class='f-group'>
+          <label>¿Cómo quieres recibirlo?</label>
+          <select id='fmethod'>
+            <option value='Yape'>Yape</option>
+            <option value='Plin'>Plin</option>
+            <option value='Transferencia bancaria'>Transferencia bancaria</option>
+            <option value='Efectivo'>Efectivo</option>
+          </select>
+        </div>
+        <div class='f-group' style='margin-top:0.5rem'>
+          <label style='display:flex;align-items:center;gap:8px;cursor:pointer'>
+            <input type='checkbox' required style='width:16px;height:16px;accent-color:var(--primary)'>
+            <span style='font-size:0.72rem;color:var(--text-muted)'>Entiendo que es un préstamo entre amigos y me comprometo a pagar a tiempo 💛</span>
+          </label>
+        </div>
+        <button type='submit' class='btn-submit'>Enviar por WhatsApp →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class='section' id='faq'>
+  <div class='container'>
+    <h2 class='section-title'>Preguntas <span class='green'>Frecuentes</span></h2>
+    <p class='section-sub'>Todo lo que necesitas saber</p>
+    <div class='faq-list'>
+      <div class='faq-item' onclick='toggleFaq(this)'>
+        <div class='faq-q'><span>¿Quién puede pedir un préstamo?</span><span class='arr'>▼</span></div>
+        <div class='faq-a'><p>Solo amigos y familiares directos. Es una red privada de confianza — no está abierta al público.</p></div>
+      </div>
+      <div class='faq-item' onclick='toggleFaq(this)'>
+        <div class='faq-q'><span>¿Cuánto me puedo prestar?</span><span class='arr'>▼</span></div>
+        <div class='faq-a'><p>El mínimo es S/ 50 y el máximo S/ 600. Si necesitas más, hablamos y vemos cómo ayudarte.</p></div>
+      </div>
+      <div class='faq-item' onclick='toggleFaq(this)'>
+        <div class='faq-q'><span>¿Cuánto interés cobras?</span><span class='arr'>▼</span></div>
+        <div class='faq-a'><p>5% por ciclo de pago. Es una tasa justa entre amigos — mucho menor que cualquier prestamista informal.</p></div>
+      </div>
+      <div class='faq-item' onclick='toggleFaq(this)'>
+        <div class='faq-q'><span>¿Qué pasa si me atraso?</span><span class='arr'>▼</span></div>
+        <div class='faq-a'><p>Entre amigos nos entendemos. Si tienes un problema, avísame y buscamos una solución. No hay cobros abusivos ni recargos locos.</p></div>
+      </div>
+      <div class='faq-item' onclick='toggleFaq(this)'>
+        <div class='faq-q'><span>¿Cómo recibo el dinero?</span><span class='arr'>▼</span></div>
+        <div class='faq-a'><p>Por Yape, Plin, transferencia bancaria o efectivo — tú eliges. La transferencia se hace en el momento.</p></div>
+      </div>
+      <div class='faq-item' onclick='toggleFaq(this)'>
+        <div class='faq-q'><span>¿Puedo pagar antes del plazo?</span><span class='arr'>▼</span></div>
+        <div class='faq-a'><p>¡Claro que sí! Si puedes pagar antes, solo pagas el interés proporcional al tiempo. Sin penalización.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class='footer'>
+  <div class='logo' style='justify-content:center;margin-bottom:0.8rem'>
+    <div class='logo-icon'>C</div>
+    <div class='logo-text'><span class='chin'>CHIN</span><span class='cash'>CASH</span></div>
+  </div>
+  <p>Préstamos entre los nuestros. Sin complicaciones, con confianza. 🤝</p>
+  <div class='footer-links'>
+    <a href='#'>Términos</a>
+    <a href='#'>Privacidad</a>
+    <a href='#'>Contacto</a>
+  </div>
+  <div class='footer-copy'>© 2026 CHINCASH — Hecho con 💛 para los nuestros</div>
+</footer>
+
+<div class='modal-bg' id='modal'>
+  <div class='modal-box'>
+    <div class='check'>✓</div>
+    <h3>¡Solicitud Enviada! 🎉</h3>
+    <p>Tu mensaje ya me llegó por WhatsApp. Te respondo en un ratito para confirmar todo.</p>
+    <div class='ref' id='refCode'>REF: CHC-000000</div>
+    <button class='btn-close' onclick='closeModal()'>Oki, gracias</button>
+  </div>
+</div>
+
+<script>
+// ⚠️ CAMBIA ESTE NÚMERO POR TU WHATSAPP (con código de país, sin espacios)
+const MI_WHATSAPP = '51912182121';
+
+const fmt = n => 'S/ ' + Number(n).toFixed(2);
+const fmtI = n => 'S/ ' + Math.round(Number(n));
+
+function updateCalc() {
+  const amt = parseFloat(document.getElementById('loanAmt').value);
+  const term = parseInt(document.getElementById('loanTerm').value);
+  document.getElementById('amtDisp').textContent = fmtI(amt);
+  document.getElementById('termDisp').textContent = term <= 30 ? term + ' días' : Math.round(term/30) + ' mes(es)';
+  calculate();
+}
+
+function calculate() {
+  const amt = parseFloat(document.getElementById('loanAmt').value);
+  const termDays = parseInt(document.getElementById('loanTerm').value);
+  const mode = document.getElementById('loanMode').value;
+  const rate = 0.05;
+
+  let numPayments, cycleDays;
+  if (mode === 'daily') { cycleDays = 1; numPayments = termDays; }
+  else if (mode === 'weekly') { cycleDays = 7; numPayments = Math.ceil(termDays / 7); }
+  else if (mode === 'biweekly') { cycleDays = 15; numPayments = Math.ceil(termDays / 15); }
+  else { cycleDays = 30; numPayments = Math.ceil(termDays / 30); }
+
+  const totalInterest = amt * rate * numPayments;
+  const totalPay = amt + totalInterest;
+  const cuota = totalPay / numPayments;
+
+  document.getElementById('cuota').textContent = fmt(cuota);
+  document.getElementById('cap').textContent = fmtI(amt);
+  document.getElementById('intTotal').textContent = fmt(totalInterest);
+  document.getElementById('totalPay').textContent = fmt(totalPay);
+  document.getElementById('donutAmt').textContent = fmtI(amt);
+
+  const pctCap = (amt / totalPay) * 100;
+  document.getElementById('donut').style.background =
+    `conic-gradient(var(--primary) 0% ${pctCap}%, var(--accent) ${pctCap}% 100%)`;
+
+  const tbody = document.getElementById('amortBody');
+  tbody.innerHTML = '';
+  let balance = amt;
+  for (let i = 1; i <= numPayments; i++) {
+    const intPortion = amt * rate;
+    const capPortion = cuota - intPortion;
+    balance -= capPortion;
+    if (balance < 0) balance = 0;
+    if (i === numPayments) balance = 0;
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${i}</td><td>${fmt(cuota)}</td><td>${fmt(intPortion)}</td><td>${fmt(capPortion)}</td><td>${fmt(balance)}</td>`;
+    tbody.appendChild(row);
+  }
+}
+
+function submitApp(e) {
+  e.preventDefault();
+
+  const nombre = document.getElementById('fname').value;
+  const telefono = document.getElementById('fphone').value;
+  const monto = document.getElementById('famount').value;
+  const plazo = document.getElementById('fterm').value;
+  const motivo = document.getElementById('freason').value || 'No especificado';
+  const metodo = document.getElementById('fmethod').value;
+
+  const ref = 'CHC-' + String(Math.floor(100000 + Math.random() * 900000));
+
+  const mensaje = `🤝 *NUEVA SOLICITUD CHINCASH*\n\n` +
+    `👤 Nombre: ${nombre}\n` +
+    `📱 Teléfono: ${telefono}\n` +
+    `💰 Monto: S/ ${monto}\n` +
+    `📅 Plazo: ${plazo} días\n` +
+    `📋 Motivo: ${motivo}\n` +
+    `💳 Método: ${metodo}\n` +
+    `🔖 Referencia: ${ref}`;
+
+  const url = `https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+
+  document.getElementById('refCode').textContent = 'REF: ' + ref;
+  document.getElementById('modal').classList.add('active');
+  document.getElementById('appForm').reset();
+
+  // Abre WhatsApp en nueva pestaña
+  window.open(url, '_blank');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+function toggleFaq(el) {
+  const was = el.classList.contains('active');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+  if (!was) el.classList.add('active');
+}
+
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40);
+});
+
+function animateCounters() {
+  document.querySelectorAll('.stat-number').forEach(el => {
+    const target = parseInt(el.dataset.count);
+    const dur = 1500;
+    const start = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const p = Math.min(elapsed / dur, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      let suffix = target === 600 ? '' : target === 5 ? ' min' : '+';
+      el.textContent = Math.floor(target * ease).toLocaleString() + suffix;
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    tick();
+  });
+}
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
+  }, { threshold: 0.12 });
+document.querySelectorAll('.step, .trust-card, .faq-item, .app-form').forEach(el => {
+  el.classList.add('reveal');
+  obs.observe(el);
+});
+
+window.addEventListener('load', () => {
+  animateCounters();
+  calculate();
+});
+</script>
+</body>
+</html>
